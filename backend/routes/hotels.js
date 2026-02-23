@@ -1,6 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const { hotels, bookings, users } = require('../data/mockData')
+const mockData = require('../data/mockData')
+
+// 获取数据引用（使用 getter 确保每次获取最新数据）
+const getHotels = () => mockData.hotels
+const getBookings = () => mockData.bookings
+const getUsers = () => mockData.users
 
 // 工具函数：生成订单号
 const generateBookingId = () => {
@@ -29,9 +34,9 @@ router.get('/hotels', (req, res) => {
             nearby_type,
         } = req.query
 
-        // 过滤已上线的酒店（approved 或 published）
-        let filteredHotels = hotels.filter(
-            (hotel) => hotel.status === 'approved' || hotel.status === 'published',
+        // 过滤已上线的酒店（approved 或 published），排除 offline 状态
+        let filteredHotels = getHotels().filter(
+            (hotel) => (hotel.status === 'approved' || hotel.status === 'published') && hotel.status !== 'offline',
         )
 
         // 关键词搜索（酒店名/地址）
@@ -121,8 +126,9 @@ router.get('/hotels', (req, res) => {
             name: hotel.name,
             name_en: hotel.name_en,
             address: hotel.address,
+            city: hotel.city,
             star_rating: hotel.star_rating,
-            images: hotel.images.slice(0, 2),
+            images: hotel.images?.slice(0, 2) || [],
             min_price: hotel.min_price,
             rating: hotel.rating,
             review_count: hotel.review_count,
@@ -132,6 +138,8 @@ router.get('/hotels', (req, res) => {
             phone: hotel.phone,
             email: hotel.email,
             nearby_places: hotel.nearby_places,
+            latitude: hotel.latitude,
+            longitude: hotel.longitude,
         }))
 
         res.json({
@@ -156,7 +164,7 @@ router.get('/hotels', (req, res) => {
 // 2. 获取推荐酒店（首页用）
 router.get('/hotels/recommended', (req, res) => {
     try {
-        const approvedHotels = hotels.filter((h) => h.status === 'approved' || h.status === 'published')
+        const approvedHotels = getHotels().filter((h) => (h.status === 'approved' || h.status === 'published') && h.status !== 'offline')
         const recommended = [...approvedHotels]
             .sort((a, b) => b.rating - a.rating)
             .slice(0, 6)
@@ -165,8 +173,9 @@ router.get('/hotels/recommended', (req, res) => {
                 name: hotel.name,
                 name_en: hotel.name_en,
                 address: hotel.address,
+                city: hotel.city,
                 star_rating: hotel.star_rating,
-                images: hotel.images.slice(0, 1),
+                images: hotel.images?.slice(0, 1) || [],
                 min_price: hotel.min_price,
                 rating: hotel.rating,
                 review_count: hotel.review_count,
@@ -201,7 +210,7 @@ router.get('/hotels/search', (req, res) => {
         }
 
         const keywordLower = keyword.toLowerCase()
-        const approvedHotels = hotels.filter((h) => h.status === 'approved' || h.status === 'published')
+        const approvedHotels = getHotels().filter((h) => (h.status === 'approved' || h.status === 'published') && h.status !== 'offline')
 
         const searchResults = approvedHotels.filter(
             (hotel) =>
@@ -219,7 +228,7 @@ router.get('/hotels/search', (req, res) => {
                 address: hotel.address,
                 city: hotel.city,
                 star_rating: hotel.star_rating,
-                images: hotel.images.slice(0, 1),
+                images: hotel.images?.slice(0, 1) || [],
                 min_price: hotel.min_price,
                 rating: hotel.rating,
             })),
@@ -236,7 +245,7 @@ router.get('/hotels/search', (req, res) => {
 router.get('/hotels/:id', (req, res) => {
     try {
         const hotelId = parseInt(req.params.id)
-        const hotel = hotels.find((h) => h.id === hotelId)
+        const hotel = getHotels().find((h) => h.id === hotelId)
 
         if (!hotel) {
             return res.status(404).json({
@@ -246,7 +255,7 @@ router.get('/hotels/:id', (req, res) => {
         }
 
         // 只返回已上线的酒店
-        if (hotel.status !== 'approved' && hotel.status !== 'published') {
+        if ((hotel.status !== 'approved' && hotel.status !== 'published') || hotel.status === 'offline') {
             return res.status(404).json({
                 message: '酒店已下线',
                 code: 404,
@@ -291,7 +300,7 @@ router.post('/bookings', (req, res) => {
         }
 
         // 验证酒店和房间是否存在
-        const hotel = hotels.find((h) => h.id === parseInt(hotel_id))
+        const hotel = getHotels().find((h) => h.id === parseInt(hotel_id))
         if (!hotel) {
             return res.status(404).json({
                 message: '酒店不存在',
@@ -346,7 +355,10 @@ router.post('/bookings', (req, res) => {
         }
 
         // 保存到内存中的bookings数组
-        bookings.push(newBooking)
+        getBookings().push(newBooking)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
 
         // 返回成功响应
         res.status(201).json({
@@ -378,7 +390,7 @@ router.get('/admin/hotels', (req, res) => {
             status,
         } = req.query
 
-        let filteredHotels = [...hotels]
+        let filteredHotels = [...getHotels()]
 
         // 关键词搜索
         if (keyword) {
@@ -414,7 +426,7 @@ router.get('/admin/hotels', (req, res) => {
         // 格式化返回数据
         const formattedHotels = paginatedHotels.map((hotel) => {
             // 查找商户名称
-            const merchant = users.find(u => u.id === hotel.merchant_id)
+            const merchant = getUsers().find(u => u.id === hotel.merchant_id)
             const merchantName = merchant ? merchant.name : 
                 (hotel.merchant_id === 1001 ? '上海外滩酒店管理有限公司' :
                 hotel.merchant_id === 1002 ? '北京王府井酒店管理有限公司' : `商户${hotel.merchant_id}`)
@@ -446,7 +458,7 @@ router.get('/admin/hotels', (req, res) => {
             debug: {
                 firstHotelRawStatus: paginatedHotels[0]?.status,
                 firstHotelMerchantId: paginatedHotels[0]?.merchant_id,
-                usersCount: users.length,
+                usersCount: getUsers().length,
             }
         })
     } catch (error) {
@@ -469,7 +481,7 @@ router.get('/merchant/hotels', (req, res) => {
             })
         }
 
-        const merchantHotels = hotels.filter(
+        const merchantHotels = getHotels().filter(
             (hotel) => hotel.merchant_id === parseInt(merchantId)
         )
 
@@ -480,6 +492,7 @@ router.get('/merchant/hotels', (req, res) => {
             stars: hotel.star_rating,
             price: hotel.min_price,
             status: hotel.status,
+            reject_reason: hotel.reject_reason,
             createdAt: hotel.created_at,
         }))
 
@@ -507,6 +520,7 @@ router.post('/hotels', (req, res) => {
             })
         }
 
+        const hotels = getHotels()
         const newHotel = {
             id: hotels.length > 0 ? Math.max(...hotels.map(hotel => hotel.id)) + 1 : 1,
             ...hotelData,
@@ -522,14 +536,19 @@ router.post('/hotels', (req, res) => {
         }
 
         hotels.push(newHotel)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
 
         res.status(201).json({
             data: newHotel,
             message: '酒店创建成功，等待审核',
         })
     } catch (error) {
+        console.error('创建酒店失败:', error);
+        console.error('错误详情:', error.message);
         res.status(500).json({
-            message: '创建酒店失败',
+            message: '创建酒店失败: ' + error.message,
             code: 500,
         })
     }
@@ -539,6 +558,7 @@ router.post('/hotels', (req, res) => {
 router.put('/hotels/:id', (req, res) => {
     try {
         const hotelId = parseInt(req.params.id)
+        const hotels = getHotels()
         const hotelIndex = hotels.findIndex((h) => h.id === hotelId)
 
         if (hotelIndex === -1) {
@@ -560,6 +580,9 @@ router.put('/hotels/:id', (req, res) => {
         }
 
         hotels[hotelIndex] = updatedHotel
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
 
         res.json({
             data: updatedHotel,
@@ -577,6 +600,7 @@ router.put('/hotels/:id', (req, res) => {
 router.delete('/hotels/:id', (req, res) => {
     try {
         const hotelId = parseInt(req.params.id)
+        const hotels = getHotels()
         const hotelIndex = hotels.findIndex((h) => h.id === hotelId)
 
         if (hotelIndex === -1) {
@@ -587,6 +611,9 @@ router.delete('/hotels/:id', (req, res) => {
         }
 
         hotels.splice(hotelIndex, 1)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
 
         res.json({
             message: '删除成功',
@@ -603,7 +630,7 @@ router.delete('/hotels/:id', (req, res) => {
 router.put('/admin/hotels/:id/status', (req, res) => {
     try {
         const hotelId = parseInt(req.params.id)
-        const { status } = req.body
+        const { status, reject_reason } = req.body
 
         if (!status || !['published', 'rejected'].includes(status)) {
             return res.status(400).json({
@@ -612,6 +639,7 @@ router.put('/admin/hotels/:id/status', (req, res) => {
             })
         }
 
+        const hotels = getHotels()
         const hotelIndex = hotels.findIndex((h) => h.id === hotelId)
 
         if (hotelIndex === -1) {
@@ -622,10 +650,19 @@ router.put('/admin/hotels/:id/status', (req, res) => {
         }
 
         hotels[hotelIndex].status = status
+        if (status === 'rejected' && reject_reason) {
+            hotels[hotelIndex].reject_reason = reject_reason
+        }
+        if (status === 'published') {
+            hotels[hotelIndex].reject_reason = null
+        }
         hotels[hotelIndex].updated_at = new Date()
             .toISOString()
             .replace('T', ' ')
             .substring(0, 19)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
 
         res.json({
             message: status === 'published' ? '审核通过' : '审核拒绝',
@@ -633,6 +670,122 @@ router.put('/admin/hotels/:id/status', (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: '审核酒店失败',
+            code: 500,
+        })
+    }
+})
+
+// 12. 商户上下线酒店
+router.put('/merchant/hotels/:id/toggle-status', (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.id)
+        const { merchantId, action } = req.body
+
+        if (!merchantId || !action || !['online', 'offline'].includes(action)) {
+            return res.status(400).json({
+                message: '参数错误',
+                code: 400,
+            })
+        }
+
+        const hotels = getHotels()
+        const hotelIndex = hotels.findIndex((h) => h.id === hotelId && h.merchant_id === parseInt(merchantId))
+
+        if (hotelIndex === -1) {
+            return res.status(404).json({
+                message: '酒店不存在或无权限',
+                code: 404,
+            })
+        }
+
+        const hotel = hotels[hotelIndex]
+        
+        // 只有已审核通过的酒店才能上下线
+        if (hotel.status !== 'published' && hotel.status !== 'approved' && hotel.status !== 'offline') {
+            return res.status(400).json({
+                message: '当前状态的酒店不能上下线',
+                code: 400,
+            })
+        }
+
+        // 更新状态
+        if (action === 'offline') {
+            hotel.status = 'offline'
+            hotel.offline_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        } else {
+            hotel.status = 'published'
+            hotel.online_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        }
+        hotel.updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
+
+        res.json({
+            message: action === 'offline' ? '酒店已下线' : '酒店已上线',
+            data: {
+                id: hotel.id,
+                status: hotel.status,
+            }
+        })
+    } catch (error) {
+        console.error('上下线酒店失败:', error)
+        res.status(500).json({
+            message: '操作失败',
+            code: 500,
+        })
+    }
+})
+
+// 13. 管理员上下线酒店
+router.put('/admin/hotels/:id/toggle-status', (req, res) => {
+    try {
+        const hotelId = parseInt(req.params.id)
+        const { action } = req.body
+
+        if (!action || !['online', 'offline'].includes(action)) {
+            return res.status(400).json({
+                message: '参数错误',
+                code: 400,
+            })
+        }
+
+        const hotels = getHotels()
+        const hotelIndex = hotels.findIndex((h) => h.id === hotelId)
+
+        if (hotelIndex === -1) {
+            return res.status(404).json({
+                message: '酒店不存在',
+                code: 404,
+            })
+        }
+
+        const hotel = hotels[hotelIndex]
+        
+        // 更新状态
+        if (action === 'offline') {
+            hotel.status = 'offline'
+            hotel.offline_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        } else {
+            hotel.status = 'published'
+            hotel.online_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        }
+        hotel.updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19)
+        
+        // 保存数据到 JSON 文件
+        mockData.saveData()
+
+        res.json({
+            message: action === 'offline' ? '酒店已下线' : '酒店已上线',
+            data: {
+                id: hotel.id,
+                status: hotel.status,
+            }
+        })
+    } catch (error) {
+        console.error('上下线酒店失败:', error)
+        res.status(500).json({
+            message: '操作失败',
             code: 500,
         })
     }

@@ -1,5 +1,11 @@
-// 模拟酒店数据 - 包含多种类型酒店
-const hotels = [
+const fs = require('fs');
+const path = require('path');
+
+// 数据文件路径
+const DATA_FILE = path.join(__dirname, 'hotels-data.json');
+
+// 默认酒店数据
+const defaultHotels = [
     // ========== 原有的高端五星级酒店 ==========
     {
         id: 1,
@@ -1044,11 +1050,8 @@ const hotels = [
     }
 ];
 
-// 预订数据存储（用于模拟创建预订）
-let bookings = [];
-
-// 用户数据存储
-let users = [
+// 默认用户数据
+const defaultUsers = [
     {
         id: 1,
         username: 'admin',
@@ -1203,8 +1206,59 @@ let users = [
     },
 ];
 
+// 加载数据的函数
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            console.log('从 JSON 文件加载数据成功');
+            return {
+                hotels: data.hotels || defaultHotels,
+                bookings: data.bookings || [],
+                users: data.users || defaultUsers
+            };
+        }
+    } catch (error) {
+        console.error('加载数据文件失败:', error);
+    }
+    console.log('使用默认数据');
+    return {
+        hotels: [...defaultHotels],
+        bookings: [],
+        users: [...defaultUsers]
+    };
+}
+
+// 保存数据的函数
+function saveData(hotels, bookings, users) {
+    try {
+        const data = { hotels, bookings, users };
+        console.log('正在保存数据，酒店数量:', hotels.length);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+        console.log('数据已保存到 JSON 文件:', DATA_FILE);
+        return true;
+    } catch (error) {
+        console.error('保存数据失败:', error);
+        console.error('错误详情:', error.message);
+        return false;
+    }
+}
+
+// 初始化数据
+const loadedData = loadData();
+
+// 导出数据（使用 let 以便可以修改）
+let hotels = loadedData.hotels;
+let bookings = loadedData.bookings;
+let users = loadedData.users;
+
+// 导出保存函数
 module.exports = {
-    hotels,
-    bookings,
-    users
+    get hotels() { return hotels; },
+    set hotels(value) { hotels = value; },
+    get bookings() { return bookings; },
+    set bookings(value) { bookings = value; },
+    get users() { return users; },
+    set users(value) { users = value; },
+    saveData: () => saveData(hotels, bookings, users)
 };

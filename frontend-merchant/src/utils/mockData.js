@@ -1,10 +1,3 @@
-// Mock users
-export const MOCK_USERS = [
-  { id: 1, username: 'admin', password: '123456', role: 'admin', name: '超级管理员' },
-  { id: 2, username: 'merchant1', password: '123456', role: 'merchant', name: '商户A', merchantId: 'M001' },
-  { id: 3, username: 'merchant2', password: '123456', role: 'merchant', name: '商户B', merchantId: 'M002' },
-]
-
 // 从后端 API 获取所有酒店数据（admin用）
 export const getHotels = async (status = '') => {
   try {
@@ -41,18 +34,20 @@ export const saveHotels = (hotels) => {
   localStorage.setItem('hms_hotels', JSON.stringify(hotels))
 }
 
-export const getUsers = () => {
-  const saved = localStorage.getItem('hms_users')
-  return saved ? JSON.parse(saved) : MOCK_USERS
-}
-
-export const registerUser = ({ username, password, name }) => {
-  const users = getUsers()
-  if (users.find(u => u.username === username)) return { error: '用户名已存在' }
-  const newUser = {
-    id: Date.now(), username, password, role: 'merchant', name,
-    merchantId: 'M' + Date.now()
+// 注册用户（调用后端API）
+export const registerUser = async ({ username, password, name }) => {
+  try {
+    const res = await fetch('http://localhost:3001/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, name }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      return { error: data.message || '注册失败' }
+    }
+    return { user: data.data }
+  } catch (error) {
+    return { error: '注册失败，请检查网络' }
   }
-  localStorage.setItem('hms_users', JSON.stringify([...users, newUser]))
-  return { user: newUser }
 }

@@ -16,6 +16,7 @@ import {
 import { LeftOutline, HeartOutline, HeartFill, EnvironmentOutline } from 'antd-mobile-icons';
 import { getHotelDetail } from '../api/hotel';
 import { useSearchStore } from '../store/searchStore';
+import { useFavoriteStore } from '../store/favoriteStore';
 import type { Hotel, RoomType, NearbyPlace } from '../types';
 import dayjs from 'dayjs';
 import './HotelDetail.css';
@@ -25,9 +26,11 @@ export default function HotelDetail() {
   const navigate = useNavigate();
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
+  
+  // 收藏功能
+  const { addFavorite, removeFavorite, isFavorite } = useFavoriteStore();
 
   const { checkinDate, checkoutDate, setDates } = useSearchStore();
   const [calendarVisible, setCalendarVisible] = useState(false);
@@ -179,23 +182,35 @@ export default function HotelDetail() {
         </div>
         <div
           className="nav-favorite"
-          onClick={() => setIsFavorite(!isFavorite)}
+          onClick={() => {
+            if (hotel) {
+              if (isFavorite(hotel.id)) {
+                removeFavorite(hotel.id);
+                Toast.show({ content: '已取消收藏', position: 'center' });
+              } else {
+                addFavorite(hotel);
+                Toast.show({ content: '已添加收藏', position: 'center' });
+              }
+            }
+          }}
         >
-          {isFavorite ? <HeartFill color="#ff4d4f" /> : <HeartOutline />}
+          {hotel && isFavorite(hotel.id) ? <HeartFill color="#ff4d4f" /> : <HeartOutline />}
         </div>
       </div>
 
       {/* 图片轮播 */}
-      <Swiper className="hotel-swiper" autoplay loop>
-        {images.map((img, index) => (
-          <Swiper.Item key={index}>
-            <div
-              className="swiper-image"
-              style={{ backgroundImage: `url(${img})` }}
-            />
-          </Swiper.Item>
-        ))}
-      </Swiper>
+      <div className="swiper-container">
+        <Swiper className="hotel-swiper" autoplay loop>
+          {images.map((img, index) => (
+            <Swiper.Item key={index}>
+              <div
+                className="swiper-image"
+                style={{ backgroundImage: `url(${img})` }}
+              />
+            </Swiper.Item>
+          ))}
+        </Swiper>
+      </div>
 
       {/* 酒店基本信息 */}
       <div className="detail-content">
@@ -298,9 +313,7 @@ export default function HotelDetail() {
                 <h4 className="room-name">{room.name}</h4>
                 <p className="room-desc">{room.area}㎡ · {room.bed_type} · 可住{room.max_guests}人</p>
                 <div className="room-tags">
-                  {room.discount_price && (
-                    <Tag color="danger" className="discount-tag">特惠</Tag>
-                  )}
+                  {/* 特惠标签已移除 */}
                 </div>
               </div>
               <div className="room-price-action">

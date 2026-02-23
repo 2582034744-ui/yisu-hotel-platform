@@ -241,7 +241,9 @@
   margin: 0 0 12px 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  max-width: 100%;
+  display: block;
 }
 
 .hotel-address svg {

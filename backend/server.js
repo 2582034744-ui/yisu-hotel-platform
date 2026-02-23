@@ -9,8 +9,8 @@ const PORT = 3001
 
 // 中间件配置
 app.use(cors()) // 允许跨域请求
-app.use(express.json()) // 解析JSON请求体
-app.use(express.urlencoded({ extended: true })) // 解析URL编码的请求体
+app.use(express.json({ limit: '50mb' })) // 解析JSON请求体，支持最大50MB（用于base64图片）
+app.use(express.urlencoded({ extended: true, limit: '50mb' })) // 解析URL编码的请求体
 app.use(express.static(path.join(__dirname, 'public'))) // 提供静态文件服务
 
 // 路由配置

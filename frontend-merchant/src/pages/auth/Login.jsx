@@ -3,7 +3,7 @@ import { UserOutlined, LockOutlined, IdcardOutlined, BankOutlined } from '@ant-d
 
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { getUsers, registerUser } from '../../utils/mockData'
+import { registerUser } from '../../utils/mockData'
 
 export default function Login() {
   const { login } = useAuth()
@@ -11,19 +11,33 @@ export default function Login() {
   const [loginForm] = Form.useForm()
   const [regForm] = Form.useForm()
 
-  const onLogin = ({ username, password }) => {
-    const user = getUsers().find(u => u.username === username && u.password === password)
-    if (!user) return message.error('用户名或密码错误')
-    login(user)
-    navigate(user.role === 'admin' ? '/admin/hotels' : '/merchant/hotels')
+  const onLogin = async ({ username, password }) => {
+    try {
+      const res = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+      const data = await res.json()
+      
+      if (!res.ok) {
+        return message.error(data.message || '登录失败')
+      }
+      
+      login(data.data)
+      navigate(data.data.role === 'admin' ? '/admin/hotels' : '/merchant/hotels')
+    } catch (error) {
+      console.error('登录失败:', error)
+      message.error('登录失败，请检查网络')
+    }
   }
 
-  const onRegister = ({ username, password, name }) => {
-    const result = registerUser({ username, password, name })
+  const onRegister = async ({ username, password, name }) => {
+    const result = await registerUser({ username, password, name })
     if (result.error) return message.error(result.error)
     message.success('注册成功，请登录')
     regForm.resetFields()
-    loginForm.setFieldsValue({ username })
+    loginForm.setFieldValue('username', username)
   }
 
   const loginTab = (
@@ -39,7 +53,8 @@ export default function Login() {
       </Form.Item>
       <Divider plain style={{ color: '#bbb', fontSize: 12 }}>测试账号</Divider>
       <div style={{ color: '#999', fontSize: 12, textAlign: 'center', lineHeight: 2 }}>
-        管理员：admin / 123456 &nbsp;|&nbsp; 商户：merchant1 / 123456
+        管理员：admin / admin123<br/>
+        商户：shanghai_merchant / 123456
       </div>
     </Form>
   )

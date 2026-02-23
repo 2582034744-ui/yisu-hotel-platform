@@ -32,8 +32,13 @@
 }
 
 /* 图片轮播 */
-.hotel-swiper {
+.swiper-container {
+  position: relative;
   height: 280px;
+}
+
+.hotel-swiper {
+  height: 100%;
 }
 
 .swiper-image {
@@ -42,6 +47,8 @@
   background-size: cover;
   background-position: center;
 }
+
+
 
 /* 酒店基本信息 */
 .detail-content {
@@ -377,20 +384,29 @@
 .nearby-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .nearby-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: #f8f8f8;
-  border-radius: 8px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.nearby-item:last-child {
+  border-bottom: none;
 }
 
 .nearby-icon {
-  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  font-size: 18px;
 }
 
 .nearby-info {
@@ -401,18 +417,23 @@
 }
 
 .nearby-name {
-  font-size: 14px;
+  font-size: 15px;
   color: #333;
+  font-weight: 500;
 }
 
 .nearby-type {
-  font-size: 10px !important;
+  font-size: 11px !important;
   width: fit-content;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
 }
 
 .nearby-distance {
-  font-size: 13px;
-  color: #999;
+  font-size: 14px;
+  color: #1677ff;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* 底部预订栏 */
