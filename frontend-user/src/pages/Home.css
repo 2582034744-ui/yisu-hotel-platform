@@ -1,0 +1,267 @@
+/* 首页样式 */
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #1677ff 0%, #1677ff 200px, #f5f5f5 200px);
+  padding-bottom: 20px;
+}
+
+/* Banner区域 */
+.home-banner {
+  padding: 40px 20px 60px;
+  text-align: center;
+  color: #fff;
+}
+
+.home-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.home-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* 搜索卡片 */
+.search-card {
+  background: #fff;
+  margin: -40px 16px 16px;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.search-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-item:last-of-type {
+  border-bottom: none;
+}
+
+.search-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  outline: none;
+  background: transparent;
+  padding: 4px 0;
+}
+
+.search-input::placeholder {
+  color: #ccc;
+  font-weight: normal;
+}
+
+.search-icon {
+  font-size: 20px;
+  color: #1677ff;
+  padding: 8px;
+}
+
+/* 日期选择行 */
+.date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.date-box {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.date-label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.date-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.date-week {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.date-divider {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nights-badge {
+  background: #f0f5ff;
+  color: #1677ff;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 查询按钮 */
+.search-btn {
+  margin-top: 8px;
+  height: 48px;
+  font-size: 17px;
+  font-weight: 600;
+  border-radius: 24px !important;
+}
+
+/* 区域通用样式 */
+.section {
+  margin: 16px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.more-link {
+  font-size: 13px;
+  color: #999;
+}
+
+/* 热门城市 */
+.cities-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.city-item {
+  text-align: center;
+  padding: 14px 10px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.city-item:active {
+  background: #1677ff;
+  color: #fff;
+}
+
+/* 推荐酒店 */
+.recommended-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.recommended-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recommended-image {
+  width: 100%;
+  height: 100px;
+}
+
+.recommended-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recommended-info {
+  padding: 12px;
+}
+
+.recommended-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recommended-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.star-badge {
+  color: #ffa500;
+  font-size: 11px;
+}
+
+.rating {
+  font-size: 12px;
+  color: #1677ff;
+  background: #f0f5ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.recommended-price {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.price-prefix {
+  font-size: 11px;
+  color: #ff4d4f;
+}
+
+.price-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff4d4f;
+}
+
+.price-suffix {
+  font-size: 11px;
+  color: #999;
+}
