@@ -1,0 +1,13 @@
+{
+  "name": "hotel-api-server",
+  "version": "1.0.0",
+  "description": "酒店预订平台模拟后端API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
